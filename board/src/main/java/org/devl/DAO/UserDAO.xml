@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.devl.DAO.UserDAO">
+    <select id="duplicate" resultType="java.lang.Integer">
+    	SELECT COUNT(id) FROM users WHERE id = #{id}
+    </select>
+    <insert id="join">
+        INSERT INTO users VALUES(#{id}, #{pw}, #{email}, #{permit})
+    </insert>
+    <select id="eqUser" resultType="org.devl.VO.UserVO">
+        SELECT * FROM users WHERE id = #{id}
+    </select>
+	<!-- <select id="list" resultType="org.kdea.mybatis.EmpVO"> -->
+	<!-- select * from emp -->
+	<!-- </select> -->
+	<!-- <insert id="insert" parameterType="org.kdea.mybatis.EmpVO"> -->
+	<!-- insert into emp (empno, ename, deptno, job, sal) -->
+	<!-- values ( #{empno}, #{ename}, #{deptno}, #{job}, #{sal} ) -->
+	<!-- </insert> -->
+	<!-- <select id="info" resultType="org.kdea.mybatis.EmpVO"> -->
+	<!-- select * from emp -->
+	<!-- where empno=#{empno} -->
+	<!-- </select> -->
+	<!-- <update id="update" parameterType="org.kdea.mybatis.EmpVO"> -->
+	<!-- update emp set -->
+	<!-- deptno=#{deptno}, sal=#{sal} where empno=#{empno} -->
+	<!-- </update> -->
+	<!-- <delete id="delete"> -->
+	<!-- delete from emp where empno=#{empno} -->
+	<!-- </delete> -->
+</mapper>

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans 
+	xmlns="http://www.springframework.org/schema/security" 
+	xmlns:beans="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:jee="http://www.springframework.org/schema/jee" 
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation=
+		"http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-4.1.xsd
+        http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee.xsd
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<!-- Root Context: defines shared resources visible to all other web components -->
+	<context:component-scan base-package="org.devl.java" />
+	<context:component-scan base-package="org.devl.service" />
+
+	<!-- DB source -->
+	<beans:bean id="dataSource" class="oracle.jdbc.pool.OracleDataSource">
+		<beans:property name="dataSourceName" value="ds" />
+		<beans:property name="URL" value="jdbc:oracle:thin:@localhost:1521:xe" />
+		<beans:property name="user" value="scott" />
+		<beans:property name="password" value="TIGER" />
+	</beans:bean>
+
+	<beans:bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<beans:property name="mapperLocations" value="classpath:org/devl/DAO/*.xml" />
+		<beans:property name="dataSource" ref="dataSource" />
+	</beans:bean>
+
+	<beans:bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+		<beans:constructor-arg index="0" ref="sqlSessionFactory" />
+		
+	</beans:bean>
+		<beans:bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+		<beans:property name="host" value="smtp.gmail.com" />
+		<beans:property name="port" value="25" />
+		<beans:property name="username" value="digh1219@gmail.com" />
+		<beans:property name="password" value="whddnr2484297" />
+		<beans:property name="defaultEncoding" value="utf-8" />
+		<beans:property name="javaMailProperties">
+			<beans:props>
+				<beans:prop key="mail.smtp.starttls.enable">true</beans:prop>
+				<beans:prop key="mail.transport.protocol">smtp</beans:prop>
+				<beans:prop key="mail.smtp.auth">true</beans:prop>
+				<beans:prop key="mail.debug">true</beans:prop>
+			</beans:props>
+		</beans:property>
+	</beans:bean>
+	
+	<!-- Access permission -->
+	<http auto-config='true' use-expressions="true">
+		<!-- <intercept-url pattern="/main/**" access="hasAuthority('ROLE_ADMIN')" /> -->
+		<!-- <intercept-url pattern="/main/**" access="hasAuthority('ROLE_MEMBER')" /> -->
+		<!-- <intercept-url pattern="/admin/**" access="hasAuthority('ROLE_ADMIN')" /> -->
+		<!-- <intercept-url pattern="/manager/**" access="hasRole('ROLE_MANAGER')" /> -->
+		<!-- <intercept-url pattern="/member/**" access="isAuthenticated()" /> -->
+		<!-- <intercept-url pattern="/dev/**" access="hasAuthority('DEV')" /> -->
+		<intercept-url pattern="/main/home" access="permitAll" />
+		<intercept-url pattern="/main/content" access="permitAll" />
+		<intercept-url pattern="/main/**" access="hasAuthority('ROLE_MEMBER')" />
+		<form-login 
+			login-page="/login" 
+			login-processing-url="/user/login" 
+			username-parameter="id"
+			password-parameter="pw"
+			default-target-url="/main/home" 
+			authentication-failure-url="/login?error=true" />
+		<logout 
+		    logout-url="/logout" 
+		    logout-success-url="/slogout" />
+		<csrf disabled="true" />
+	</http>
+	
+	<beans:bean id="passwordEncoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder" />
+	<beans:bean id="customAuthenticationProvider" class="org.devl.security.CustomAuthenticationProvider" />
+	
+	<authentication-manager>
+		<authentication-provider ref="customAuthenticationProvider"/>
+	</authentication-manager>
+</beans:beans>
