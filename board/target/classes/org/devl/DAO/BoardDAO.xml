@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.devl.DAO.BoardDAO">
+    <select id="list" parameterType="hashmap" resultType="org.devl.VO.BoardVO">
+        SELECT *
+		FROM
+		(
+		SELECT t.*, rownum as r
+		FROM
+		(
+		SELECT * FROM board 
+		WHERE parent IS NULL 
+		ORDER BY num desc
+		)t
+		)
+		WHERE r BETWEEN #{a} AND #{b}
+    </select>
+    <select id="getContent" resultType="org.devl.VO.BoardVO">
+        SELECT * FROM board WHERE num = #{num}
+    </select>
+    <insert id="save" parameterType="org.devl.VO.BoardVO">
+		INSERT INTO board 
+		(
+		num, active, author, content, title, regdate, parent
+		)
+		VALUES 
+		(
+		board_seq.NEXTVAL, 1, #{author}, #{content}, #{title, jdbcType=VARCHAR}, #{regdate}, #{parent, jdbcType=INTEGER}
+		)
+	</insert>
+	<update id="update" parameterType="org.devl.VO.BoardVO">
+	    UPDATE board SET content=#{content}, title=#{title, jdbcType=VARCHAR} WHERE num = #{num}
+	</update>
+	<select id="getTotal" resultType="int">
+		SELECT COUNT(num) FROM board WHERE parent IS NULL
+	</select>
+	<select id="check" resultType="int">
+		SELECT count(num) FROM board WHERE parent = #{num}
+	</select>
+	<select id="search" resultMap="searchresult" parameterType="hashmap">
+		SELECT t2.* FROM
+		(
+		SELECT t.*, rownum as r, count(*)over() as total
+		FROM
+		(
+		SELECT * FROM board
+		WHERE ${key} LIKE '%${word}%' AND parent IS NULL
+		ORDER BY num desc
+		)t
+		)t2
+		WHERE r BETWEEN #{a} AND #{b}
+	</select>
+	<select id="getReples" resultType="org.devl.VO.BoardVO">
+	    SELECT *
+		FROM
+		(
+		SELECT LEVEL, num, content, author, parent
+		FROM board 
+		START WITH num = #{num} 
+		CONNECT BY PRIOR num = parent
+		)
+		WHERE parent IS NOT NULL
+	</select>
+	<!-- LPAD('ㄴ', 4*(LEVEL-2), ' ') || author as -->
+
+	<!-- <delete id="deleteContentA"> -->
+	<!-- DELETE FROM board WHERE num = #{num} -->
+	<!-- </delete> -->
+
+	<!-- <update id="deleteContentB"> -->
+	<!-- UPDATE board -->
+	<!-- SET title='삭제된 게시물', content=' ', author=' ' -->
+	<!-- WHERE num = #{num} -->
+	<!-- </update> -->
+	
+	<select id="deleteContent" statementType="CALLABLE">
+		{call delcontent(#{num})}
+	</select>
+	
+	<resultMap id="searchresult" type="java.util.HashMap">
+		<result javaType="java.lang.String" column="total" property="total" />
+		<collection property="list" javaType="ArrayList" ofType="org.devl.VO.BoardVO">
+			<result property="author" column="author" />
+			<result property="title" column="title" />
+			<result property="content" column="content" />
+			<result property="regdate" column="regdate" />
+			<result property="num" column="num" />
+		</collection>
+	</resultMap>
+	<!-- <select id="list" resultType="org.kdea.mybatis.EmpVO"> -->
+	<!-- select * from emp -->
+	<!-- </select> -->
+	<!-- <insert id="insert" parameterType="org.kdea.mybatis.EmpVO"> -->
+	<!-- insert into emp (empno, ename, deptno, job, sal) -->
+	<!-- values ( #{empno}, #{ename}, #{deptno}, #{job}, #{sal} ) -->
+	<!-- </insert> -->
+	<!-- <select id="info" resultType="org.kdea.mybatis.EmpVO"> -->
+	<!-- select * from emp -->
+	<!-- where empno=#{empno} -->
+	<!-- </select> -->
+	<!-- <update id="update" parameterType="org.kdea.mybatis.EmpVO"> -->
+	<!-- update emp set -->
+	<!-- deptno=#{deptno}, sal=#{sal} where empno=#{empno} -->
+	<!-- </update> -->
+	<!-- <delete id="delete"> -->
+	<!-- delete from emp where empno=#{empno} -->
+	<!-- </delete> -->
+</mapper>
